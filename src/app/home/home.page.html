@@ -1,28 +1,31 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-title>Bluetooth Devices</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <ion-list>
-    <ion-item *ngFor="let device of devices" (click)="connectToDevice(device)" button detail>
+    <ion-item *ngFor="let device of devices" (click)="connectToDevice(device)"
+      [color]="device === selectedDevice ? 'tertiary' : ''" button detail>
       {{ device.name || 'Unknown Device' }} - {{ device.address }}
     </ion-item>
   </ion-list>
-  <ion-item *ngIf="selectedDevice">
-    <ion-label position="floating">Message to send</ion-label>
-    <ion-input [(ngModel)]="message"></ion-input>
-  </ion-item>
-  <ion-button expand="block" color="primary" *ngIf="selectedDevice" (click)="sendData()">
-    Send Message
-  </ion-button>
-  <ion-button expand="block" color="secondary" *ngIf="selectedDevice" (click)="disconnect()">
-    Disconnect
-  </ion-button>
-  <ion-button expand="block" color="medium" (click)="clearMessages()">
-    Clear Messages
-  </ion-button>
+  <div *ngIf="selectedDevice">
+    <ion-item>
+      <ion-label position="floating">Message to send</ion-label>
+      <ion-input [(ngModel)]="message"></ion-input>
+    </ion-item>
+    <ion-button expand="block" color="success" (click)="sendData()">
+      Send Message
+    </ion-button>
+    <ion-button expand="block" color="danger" (click)="disconnect()">
+      Disconnect
+    </ion-button>
+    <ion-button expand="block" color="medium" (click)="clearMessages()">
+      Clear Messages
+    </ion-button>
+  </div>
   <ion-list *ngIf="messages.length > 0">
     <ion-item *ngFor="let msg of messages">
       {{ msg }}

@@ -76,15 +76,23 @@ export class HomePage {
     );
   }
 
-  connectToDevice(device: any) {
-    this.bluetoothSerial.connect(device.address).subscribe(success => {
-      this.selectedDevice = device;
-      console.log('Connected to', device.name);
-      this.receiveData();
-    }, error => {
-      console.error('Error connecting to device:', error);
-    });
+  async connectToDevice(device: any) {
+    await this.showLoader(); // Show loader when connection starts
+    this.bluetoothSerial.connect(device.address).subscribe(
+      success => {
+        this.selectedDevice = device;
+        console.log('Connected to', device.name);
+        this.receiveData();
+        this.hideLoader(); // Hide loader on successful connection
+      },
+      error => {
+        console.error('Error connecting to device:', error);
+        this.hideLoader(); // Hide loader on error
+        this.presentToast('Failed to connect: ' + error); // Show error message
+      }
+    );
   }
+
 
   sendData() {
     if (this.message.length > 0) {
