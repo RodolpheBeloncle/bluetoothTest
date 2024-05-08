@@ -26,6 +26,7 @@
     "@capacitor/android": "^6.0.0",
     "@capacitor/core": "6.0.0",
     "@ionic/angular": "^8.0.0",
+    "@supabase/supabase-js": "^2.43.1",
     "ionicons": "^7.0.0",
     "rxjs": "^7.8.1",
     "tslib": "^2.3.0",
