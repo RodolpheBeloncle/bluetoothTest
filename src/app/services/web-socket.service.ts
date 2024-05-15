@@ -7,13 +7,13 @@ import { Message } from '../types/data.service.types';
 })
 export class WebSocketService {
   private ws: WebSocket | null = null;
-  private messagesSubject = new Subject<Message>();
+  private messagesSubject = new Subject<Message[]>();
   public messages$ = this.messagesSubject.asObservable();
 
   constructor() { }
 
   connect() {
-    this.ws = new WebSocket('ws://localhost:8080');
+    this.ws = new WebSocket('ws://192.168.1.14:3000');
     this.ws.onmessage = (event) => {
       this.handleMessage(event.data);
     };
@@ -27,33 +27,44 @@ export class WebSocketService {
 
   sendMessage(message: any) {
     if (this.ws) {
+      console.log('Sending message to server:', message);
       this.ws.send(JSON.stringify(message));
     }
   }
 
   joinGroup(userId: string, groupId: string) {
-    const joinMessage = { type: 'join', userId, groupId, text: '', createdAt: new Date() };
+    const joinMessage = { userId, groupId, text: '', action: 'join' };
     this.sendMessage(joinMessage);
   }
 
-  leaveGroup(groupId: string) {
-    const leaveMessage = { type: 'leave', groupId, userId: '', text: '', createdAt: new Date() };
+  leaveGroup(userId: string, groupId: string) {
+    const leaveMessage = { userId, groupId, text: '', action: 'leave' };
     this.sendMessage(leaveMessage);
   }
 
+  sendMessageToGroup(userId: string, groupId: string, text: string) {
+    const message = { userId, groupId, text, action: 'message' };
+    this.sendMessage(message);
+  }
+
   private handleMessage(data: string) {
-    // Check if the message contains JSON
-    const jsonStart = data.indexOf('{');
-    if (jsonStart !== -1) {
-      const jsonString = data.substring(jsonStart);
-      try {
-        const message = JSON.parse(jsonString) as Message;
-        this.messagesSubject.next(message);
-      } catch (error) {
-        console.error('Error parsing message', error);
+    try {
+      const parsedData = JSON.parse(data);
+      if (parsedData.status === 'success' || parsedData.status === 'error') {
+        console.log('Received response:', parsedData);
+      } else if (parsedData.status === 'history') {
+        const messages = parsedData.data as Message[];
+        console.log('Received message history:', messages);
+        this.messagesSubject.next(messages);
+      } else if (parsedData.userId && parsedData.groupId && parsedData.text) {
+        const message = parsedData as Message;
+        console.log('Parsed message:', message);
+        this.messagesSubject.next([message]);
+      } else {
+        console.log('Received unknown data format:', parsedData);
       }
-    } else {
-      console.log('Received non-JSON message:', data);
+    } catch (error) {
+      console.error('Error parsing message', error);
     }
   }
 }

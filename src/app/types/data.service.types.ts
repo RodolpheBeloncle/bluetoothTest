@@ -8,10 +8,10 @@ export interface User {
 
 export interface Message {
     type: string;
-    userId: string;
-    groupId: string;
+    user_id: string;
+    group_id: string;
     text: string;
-    createdAt: Date;
+    created_at: Date;
 }
 
 

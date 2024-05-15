@@ -33,8 +33,9 @@ export class MessagesPage implements OnInit, OnDestroy {
       }
     });
 
-    this.webSocketService.messages$.subscribe(message => {
-      this.messages.push(message);
+    this.webSocketService.messages$.subscribe(messages => {
+      console.log('New messages received:', messages);
+      this.messages.push(...messages);
     });
 
     this.webSocketService.connect();
@@ -42,7 +43,7 @@ export class MessagesPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.groupId) {
-      this.webSocketService.leaveGroup(this.groupId);
+      this.webSocketService.leaveGroup(this.currentUserId, this.groupId);
     }
   }
 
@@ -52,14 +53,14 @@ export class MessagesPage implements OnInit, OnDestroy {
 
   sendMessage() {
     if (this.messageText.trim() && this.groupId) {
-      this.webSocketService.sendMessage({
-        type: 'message',
-        userId: this.currentUserId,
-        groupId: this.groupId,
-        text: this.messageText,
-        createdAt: new Date()
-      });
+      this.webSocketService.sendMessageToGroup(this.currentUserId, this.groupId, this.messageText);
       this.messageText = '';
     }
+  }
+
+  isCurrentUserMessage(message: Message): boolean {
+    console.log('isCurrentUserMessage:', message.user_id, this.currentUserId);
+    return message.user_id === this.currentUserId;
+
   }
 }

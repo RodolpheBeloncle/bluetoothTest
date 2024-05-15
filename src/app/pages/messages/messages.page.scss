@@ -21,27 +21,42 @@ ion-textarea {
 }
 
 .message {
-    padding: 10px !important;
-    border-radius: 10px !important;
-    margin-bottom: 8px !important;
-
-    img {
-        width: 100%;
-    }
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    max-width: 75%;
+    word-wrap: break-word;
 }
 
 .my-message {
-    background: #dbf7c5;
-    color: #000;
+    background-color: #7fe2b5;
+    text-align: right;
+    margin-left: auto;
 }
 
 .other-message {
-    background: #fff;
-    color: #000;
+    background-color: #d0606a;
+    text-align: left;
+    margin-right: auto;
 }
 
-.time {
-    color: #cacaca;
+.ion-textarea {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 10px;
+}
+
+
+
+.time.time .ion-text-left {
+    color: #8a8383;
+    float: left;
+    font-size: small;
+}
+
+
+.time.time .ion-text-right {
+    color: #8a8383;
     float: right;
     font-size: small;
 }
