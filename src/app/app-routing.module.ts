@@ -1,24 +1,19 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import { authGuard } from './guards/auth.guard';
 
 const routes: Routes = [
   {
-    path: 'home',
-    loadChildren: () => import('./pages/login/login.module').then(m => m.LoginPageModule)
-  },
-  {
     path: '',
-    redirectTo: 'home',
-    pathMatch: 'full'
+    redirectTo: 'login',
+    pathMatch: 'full',
   },
   {
     path: 'login',
-    loadChildren: () => import('./pages/login/login.module').then(m => m.LoginPageModule)
+    loadChildren: () => import('./pages/login/login.module').then((m) => m.LoginPageModule),
   },
   {
     path: 'register',
-    loadChildren: () => import('./pages/register/register.module').then(m => m.RegisterPageModule)
+    loadChildren: () => import('./pages/register/register.module').then((m) => m.RegisterPageModule),
   },
   {
     path: 'groups',
@@ -26,20 +21,18 @@ const routes: Routes = [
   },
   {
     path: 'groups/:groupid',
-    loadChildren: () =>
-      import('./pages/messages/messages.module').then((m) => m.MessagesPageModule),
-    canActivate: [authGuard],
+    loadChildren: () => import('./pages/messages/messages.module').then((m) => m.MessagesPageModule),
   },
+
   {
-    path: 'messages',
-    loadChildren: () => import('./pages/messages/messages.module').then(m => m.MessagesPageModule)
+    path: '**',
+    redirectTo: 'login',
+    pathMatch: 'full',
   },
 ];
 
 @NgModule({
-  imports: [
-    RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })
-  ],
-  exports: [RouterModule]
+  imports: [RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })],
+  exports: [RouterModule],
 })
 export class AppRoutingModule { }

@@ -1,3 +1,21 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>App Title</ion-title>
+      <ion-buttons slot="end">
+        <ion-button *ngIf="isAuthenticated | async as user; else loggedOut" (click)="signOut()">
+          Logout
+        </ion-button>
+        <ng-template #loggedOut>
+          <ion-button (click)="router.navigate(['/'])">
+            Login
+          </ion-button>
+        </ng-template>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content>
+    <router-outlet></router-outlet>
+  </ion-content>
 </ion-app>

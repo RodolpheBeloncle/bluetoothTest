@@ -1,79 +1,70 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-import { Injectable } from '@angular/core'
-import { Router } from '@angular/router'
-import { isPlatform } from '@ionic/angular'
-import { createClient, SupabaseClient, User } from '@supabase/supabase-js'
-import { BehaviorSubject, Observable } from 'rxjs'
-import { environment } from '../../environments/environment'
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AuthService {
-  private supabase: SupabaseClient
-  private currentUser: BehaviorSubject<boolean | User> = new BehaviorSubject<boolean | User>(false)
+  private currentUserSubject: BehaviorSubject<any>;
+  public currentUser: Observable<any>;
 
-  constructor(private router: Router) {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey)
-
-    this.supabase.auth.onAuthStateChange((event, sess) => {
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        console.log('SET USER')
-
-        this.currentUser.next(sess?.user || false)
-      } else {
-        this.currentUser.next(false)
-      }
-    })
-
-    // Trigger initial session load
-    this.loadUser()
+  constructor() {
+    const user = JSON.parse(localStorage.getItem('currentUser') ?? '{}');
+    this.currentUserSubject = new BehaviorSubject<any>(user);
+    this.currentUser = this.currentUserSubject.asObservable();
   }
 
-  async loadUser() {
-    if (this.currentUser.value) {
-      // User is already set, no need to do anything else
-      return
-    }
-    const user = await this.supabase.auth.getUser()
-
-    if (user.data.user) {
-      this.currentUser.next(user.data.user)
-    } else {
-      this.currentUser.next(false)
-    }
+  getCurrentUser(): Observable<any> {
+    return this.currentUser;
   }
 
-  signUp(credentials: { email: string; password: string }) {
-    return this.supabase.auth.signUp(credentials)
+  signIn(credentials: { email: string; password: string }): Observable<any> {
+    return new Observable(observer => {
+      // Simulate API call to sign in
+      setTimeout(() => {
+        const user = { id: 1, email: credentials.email }; // Simulate user data
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+        observer.next(user);
+        observer.complete();
+      }, 1000);
+    });
   }
 
-  signIn(credentials: { email: string; password: string }) {
-    return this.supabase.auth.signInWithPassword(credentials)
+  signOut(): Observable<void> {
+    return new Observable(observer => {
+      localStorage.removeItem('currentUser');
+      this.currentUserSubject.next(null);
+      observer.next();
+      observer.complete();
+    });
   }
 
-  sendPwReset(email: string) {
-    return this.supabase.auth.resetPasswordForEmail(email)
+  signUp(credentials: { email: string; password: string }): Observable<any> {
+    return new Observable(observer => {
+      // Simulate API call to sign up
+      setTimeout(() => {
+        const user = { id: 1, email: credentials.email }; // Simulate user data
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+        observer.next(user);
+        observer.complete();
+      }, 1000);
+    });
+  }
+  forgotPassword(email: string): Observable<void> {
+    return new Observable(observer => {
+      // Simulate API call to reset password
+      setTimeout(() => {
+        observer.next();
+        observer.complete();
+      }, 1000);
+    });
   }
 
-  async signOut() {
-    await this.supabase.auth.signOut()
-    this.router.navigateByUrl('/', { replaceUrl: true })
-  }
 
-  getCurrentUser(): Observable<User | boolean> {
-    return this.currentUser.asObservable()
-  }
 
-  getCurrentUserId(): string {
-    if (this.currentUser.value) {
-      return (this.currentUser.value as User).id
-    } else {
-      return ""
-    }
-  }
 
-  signInWithEmail(email: string) {
-    return this.supabase.auth.signInWithOtp({ email })
-  }
+
+
 }

@@ -1,8 +1,8 @@
-import { AuthService } from './../../services/auth.service'
-import { Component } from '@angular/core'
-import { FormBuilder, Validators } from '@angular/forms'
-import { Router } from '@angular/router'
-import { LoadingController, AlertController } from '@ionic/angular'
+import { AuthService } from './../../services/auth.service';
+import { Component } from '@angular/core';
+import { FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
+import { LoadingController, AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-login',
@@ -10,10 +10,10 @@ import { LoadingController, AlertController } from '@ionic/angular'
   styleUrls: ['./login.page.scss'],
 })
 export class LoginPage {
-  credentials = this.fb.nonNullable.group({
-    email: ['', Validators.required],
-    password: ['', Validators.required],
-  })
+  credentials: FormGroup = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+  });
 
   constructor(
     private fb: FormBuilder,
@@ -22,32 +22,80 @@ export class LoginPage {
     private alertController: AlertController,
     private router: Router
   ) {
-    this.authService.getCurrentUser().subscribe((user) => {
+    this.redirectIfLoggedIn();
+  }
+
+  async redirectIfLoggedIn() {
+    this.authService.getCurrentUser().subscribe(user => {
       if (user) {
-        this.router.navigateByUrl('/groups', { replaceUrl: true })
+        this.router.navigateByUrl('/groups', { replaceUrl: true });
       }
-    })
+    });
   }
 
   get email() {
-    return this.credentials.controls.email
+    return this.credentials.get('email');
   }
 
   get password() {
-    return this.credentials.controls.password
+    return this.credentials.get('password');
   }
 
   async login() {
-    const loading = await this.loadingController.create()
-    await loading.present()
-
-    this.authService.signIn(this.credentials.getRawValue()).then(async (data) => {
-      await loading.dismiss()
-
-      if (data.error) {
-        this.showAlert('Login failed', data.error.message)
+    const loading = await this.createLoading();
+    try {
+      const response = this.authService.signIn(this.credentials.value).subscribe();
+      if ((response as any) && (response as any).error) {
+        this.showAlert('Failed', (response as any).error);
+      } else {
+        this.router.navigateByUrl('/groups', { replaceUrl: true });
       }
-    })
+    } catch (error) {
+      this.showAlert('Failed', 'An error occurred while logging in. Please try again.');
+    }
+    loading.dismiss();
+
+  }
+
+  async forgotPw() {
+    const email = await this.promptForEmail('Receive a new password', 'Please insert your email');
+    if (!email) return;
+
+    const loading = await this.createLoading();
+    try {
+      const response = this.authService.forgotPassword(email).subscribe();
+      if ((response as any) && (response as any).error) {
+        this.showAlert('Failed', (response as any).error);
+      } else {
+        this.showAlert('Success', 'Please check your emails for further instructions!');
+      }
+    } catch (error) {
+      this.showAlert('Failed', 'An error occurred while sending the password reset email. Please try again.');
+    } finally {
+      loading.dismiss();
+    }
+  }
+
+  async createLoading() {
+    const loading = await this.loadingController.create();
+    await loading.present();
+    return loading;
+  }
+
+  async promptForEmail(header: string, message: string): Promise<string | null> {
+    const alert = await this.alertController.create({
+      header,
+      message,
+      inputs: [{ type: 'email', name: 'email' }],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Submit', handler: (data) => data.email },
+      ],
+    });
+
+    await alert.present();
+    const result = await alert.onDidDismiss();
+    return result.data?.values?.email || null;
   }
 
   async showAlert(title: string, msg: string) {
@@ -55,89 +103,7 @@ export class LoginPage {
       header: title,
       message: msg,
       buttons: ['OK'],
-    })
-    await alert.present()
-  }
-
-
-  async forgotPw() {
-    const alert = await this.alertController.create({
-      header: "Receive a new password",
-      message: "Please insert your email",
-      inputs: [
-        {
-          type: "email",
-          name: "email",
-        },
-      ],
-      buttons: [
-        {
-          text: "Cancel",
-          role: "cancel",
-        },
-        {
-          text: "Reset password",
-          handler: async (result) => {
-            const loading = await this.loadingController.create();
-            await loading.present();
-            const { data, error } = await this.authService.sendPwReset(
-              result.email
-            );
-            await loading.dismiss();
-
-            if (error) {
-              this.showAlert("Failed", error.message);
-            } else {
-              this.showAlert(
-                "Success",
-                "Please check your emails for further instructions!"
-              );
-            }
-          },
-        },
-      ],
     });
     await alert.present();
   }
-
-  async getMagicLink() {
-    const alert = await this.alertController.create({
-      header: "Get a Magic Link",
-      message: "We will send you a link to magically log in!",
-      inputs: [
-        {
-          type: "email",
-          name: "email",
-        },
-      ],
-      buttons: [
-        {
-          text: "Cancel",
-          role: "cancel",
-        },
-        {
-          text: "Get Magic Link",
-          handler: async (result) => {
-            const loading = await this.loadingController.create();
-            await loading.present();
-            const { data, error } = await this.authService.signInWithEmail(
-              result.email
-            );
-            await loading.dismiss();
-
-            if (error) {
-              this.showAlert("Failed", error.message);
-            } else {
-              this.showAlert(
-                "Success",
-                "Please check your emails for further instructions!"
-              );
-            }
-          },
-        },
-      ],
-    });
-    await alert.present();
-  }
-
 }
