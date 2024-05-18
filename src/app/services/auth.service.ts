@@ -22,7 +22,7 @@ export class AuthService {
     return new Observable(observer => {
       // Simulate API call to sign in
       setTimeout(() => {
-        const user = { id: 1, email: credentials.email }; // Simulate user data
+        const user = { id: 2, email: "bob@exemple.com" }; // Simulate user data
         localStorage.setItem('currentUser', JSON.stringify(user));
         this.currentUserSubject.next(user);
         observer.next(user);

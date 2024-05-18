@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: 'com.example.bluetoothTest',
   appName: 'bluetoothTest',
   webDir: 'www',
+  server: {
+    androidScheme: 'https',
+  },
   cordova: {
     preferences: {
       ScrollEnabled: 'false',
