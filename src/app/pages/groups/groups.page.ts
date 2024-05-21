@@ -4,7 +4,7 @@ import { AlertController, NavController, LoadingController } from '@ionic/angula
 import { AuthService } from './../../services/auth.service';
 import { DataService } from './../../services/data.service';
 import { Group } from '../../types/data.service.types';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 @Component({
@@ -22,8 +22,7 @@ export class GroupsPage implements OnInit {
     private alertController: AlertController,
     private loadingController: LoadingController,
     private navController: NavController,
-    public router: Router ,
-    
+    public router: Router,
   ) { }
 
   ngOnInit() {
@@ -35,21 +34,26 @@ export class GroupsPage implements OnInit {
         this.router.navigate(['/login']);
       }
     });
+
+    
   }
 
   loadGroups(userId: number) {
     this.groups$ = this.dataService.getGroups(userId).pipe(
-      catchError(async (error) => {
+      catchError((error) => {
         console.error('Error loading groups:', error);
-        await this.showAlert('Error', 'Failed to load groups. Please try again later.');
-        return [];
-      })
+        this.showAlert('Error', 'Failed to load groups. Please try again later.');
+        return of([]);
+      }),
     );
+
+
   }
 
   async ionViewWillEnter() {
     if (this.user) {
       this.loadGroups(this.user.id);
+
     }
   }
 
@@ -79,12 +83,13 @@ export class GroupsPage implements OnInit {
               const newGroup = await this.dataService.createGroup(this.user.id, data.title).toPromise();
               if (newGroup) {
                 this.loadGroups(this.user.id);
-                this.router.navigateByUrl('/groups/' + newGroup.id);  // Use single quotes
+                this.router.navigateByUrl('/groups/' + newGroup.id);
               } else {
-                console.error('Error creating group');
+                await this.showAlert('Error', 'Failed to create group.');
               }
             } catch (error) {
               console.error('Error creating group:', error);
+              await this.showAlert('Error', 'Failed to create group. Please try again later.');
             } finally {
               await loading.dismiss();
             }
@@ -102,6 +107,7 @@ export class GroupsPage implements OnInit {
       this.navController.navigateRoot('/login');
     } catch (error) {
       console.error('Error signing out:', error);
+      await this.showAlert('Error', 'Failed to sign out. Please try again later.');
     }
   }
 

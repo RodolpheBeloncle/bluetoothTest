@@ -17,7 +17,11 @@ export class DataService {
   constructor(private http: HttpClient) { }
 
   getGroups(userId: number): Observable<Group[]> {
-    return this.http.get<Group[]>(`https://bluetoothtest.duckdns.org/messages/group/2`);
+
+
+    return this.http.get<Group[]>(`${this.backendUrl}/groups/${userId}`);
+
+
   }
 
   createGroup(creator: number, title: string): Observable<Group> {

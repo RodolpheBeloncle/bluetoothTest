@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment.prod';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +10,7 @@ export class AuthService {
   private currentUserSubject: BehaviorSubject<any>;
   public currentUser: Observable<any>;
 
-  constructor() {
+  constructor(private http: HttpClient) {
     const user = JSON.parse(localStorage.getItem('currentUser') ?? '{}');
     this.currentUserSubject = new BehaviorSubject<any>(user);
     this.currentUser = this.currentUserSubject.asObservable();
@@ -20,14 +22,17 @@ export class AuthService {
 
   signIn(credentials: { email: string; password: string }): Observable<any> {
     return new Observable(observer => {
-      // Simulate API call to sign in
-      setTimeout(() => {
-        const user = { id: 2, email: "bob@exemple.com" }; // Simulate user data
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        this.currentUserSubject.next(user);
-        observer.next(user);
-        observer.complete();
-      }, 1000);
+      this.http.post(`${environment.backendUrl}/auth/login`, credentials).subscribe(
+        (user: any) => {
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          this.currentUserSubject.next(user);
+          observer.next(user);
+          observer.complete();
+        },
+        error => {
+          observer.error(error);
+        }
+      );
     });
   }
 
@@ -42,29 +47,31 @@ export class AuthService {
 
   signUp(credentials: { email: string; password: string }): Observable<any> {
     return new Observable(observer => {
-      // Simulate API call to sign up
-      setTimeout(() => {
-        const user = { id: 1, email: credentials.email }; // Simulate user data
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        this.currentUserSubject.next(user);
-        observer.next(user);
-        observer.complete();
-      }, 1000);
+      this.http.post(`${environment.backendUrl}/auth/signup`, credentials).subscribe(
+        (user: any) => {
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          this.currentUserSubject.next(user);
+          observer.next(user);
+          observer.complete();
+        },
+        error => {
+          observer.error(error);
+        }
+      );
     });
   }
+
   forgotPassword(email: string): Observable<void> {
     return new Observable(observer => {
-      // Simulate API call to reset password
-      setTimeout(() => {
-        observer.next();
-        observer.complete();
-      }, 1000);
+      this.http.post(`${environment.backendUrl}/auth/forgot-password`, { email }).subscribe(
+        () => {
+          observer.next();
+          observer.complete();
+        },
+        error => {
+          observer.error(error);
+        }
+      );
     });
   }
-
-
-
-
-
-
 }
