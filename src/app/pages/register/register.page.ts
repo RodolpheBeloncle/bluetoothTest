@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
-import { Validators, FormBuilder } from '@angular/forms';
-import { LoadingController, AlertController, NavController } from '@ionic/angular';
+import { FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { LoadingController, AlertController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/auth.service';
+import { firstValueFrom } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -9,7 +11,7 @@ import { AuthService } from 'src/app/services/auth.service';
   styleUrls: ['./register.page.scss'],
 })
 export class RegisterPage {
-  credentials = this.fb.nonNullable.group({
+  credentials: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
@@ -19,18 +21,36 @@ export class RegisterPage {
     private authService: AuthService,
     private loadingController: LoadingController,
     private alertController: AlertController,
-    private navCtrl: NavController
+    private router: Router
   ) { }
 
   get email() {
-    return this.credentials.controls.email;
+    return this.credentials.get('email');
   }
 
   get password() {
-    return this.credentials.controls.password;
+    return this.credentials.get('password');
   }
 
-  
+  async signUp() {
+    const loading = await this.createLoading();
+    try {
+      console.log('Form Values:', this.credentials.value); // Log form values
+      const response = await firstValueFrom(this.authService.signUp(this.credentials.value));
+      console.log('Server Response:', response); // Log server response
+      if (response && response.error) {
+        this.showAlert('Failed', response.error);
+      } else {
+        this.router.navigateByUrl('/groups', { replaceUrl: true });
+        this.showAlert('Success', 'You have successfully registered.');
+      }
+    } catch (error) {
+      console.error('Error during sign-up:', error); // Log error
+      this.showAlert('Failed', 'An error occurred while registering. Please try again.');
+    } finally {
+      loading.dismiss();
+    }
+  }
 
   async showAlert(title: string, msg: string) {
     const alert = await this.alertController.create({
@@ -39,5 +59,11 @@ export class RegisterPage {
       buttons: ['OK'],
     });
     await alert.present();
+  }
+
+  async createLoading() {
+    const loading = await this.loadingController.create();
+    await loading.present();
+    return loading;
   }
 }

@@ -3,6 +3,8 @@ import { Component } from '@angular/core';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoadingController, AlertController } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+
 
 @Component({
   selector: 'app-login',
@@ -44,18 +46,21 @@ export class LoginPage {
   async login() {
     const loading = await this.createLoading();
     try {
-      const response = this.authService.signIn(this.credentials.value).subscribe();
-      if ((response as any) && (response as any).error) {
-        this.showAlert('Failed', (response as any).error);
+      // Convert the observable to a promise
+      const response = await firstValueFrom(this.authService.signIn(this.credentials.value));
+      if (response && response.error) {
+        this.showAlert('Failed', response.error);
       } else {
         this.router.navigateByUrl('/groups', { replaceUrl: true });
+        this.showAlert('Success', 'You have successfully logged in.');
       }
     } catch (error) {
       this.showAlert('Failed', 'An error occurred while logging in. Please try again.');
+    } finally {
+      loading.dismiss();
     }
-    loading.dismiss();
-
   }
+
 
   async forgotPw() {
     const email = await this.promptForEmail('Receive a new password', 'Please insert your email');
@@ -76,11 +81,7 @@ export class LoginPage {
     }
   }
 
-  async createLoading() {
-    const loading = await this.loadingController.create();
-    await loading.present();
-    return loading;
-  }
+
 
   async promptForEmail(header: string, message: string): Promise<string | null> {
     const alert = await this.alertController.create({
@@ -106,4 +107,15 @@ export class LoginPage {
     });
     await alert.present();
   }
+
+  goToRegister() {
+    this.router.navigateByUrl('/register', { replaceUrl: true });
+  }
+
+  async createLoading() {
+    const loading = await this.loadingController.create();
+    await loading.present();
+    return loading;
+  }
+
 }

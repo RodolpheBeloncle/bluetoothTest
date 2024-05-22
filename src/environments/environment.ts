@@ -5,8 +5,8 @@
 
 export const environment = {
   production: false,
-  backendUrl: 'https://bluetoothtest.duckdns.org',
-  socketUrl: 'wss://bluetoothtest.duckdns.org/ws',
+  backendUrl: 'http://localhost:3000',
+  socketUrl: 'ws://localhost:3000',
 
 }
 
