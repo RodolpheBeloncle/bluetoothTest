@@ -4,8 +4,6 @@ import { Subject, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { Message, Group } from '../types/data.service.types';
 
-const GROUPS_DB = 'groups';
-const MESSAGES_DB = 'messages';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +11,10 @@ const MESSAGES_DB = 'messages';
 export class DataService {
   private backendUrl = environment.backendUrl;
   private realtimeChannel: WebSocket | null = null;
+  private headers = new HttpHeaders({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${localStorage.getItem('token')}`,
+  });
 
   constructor(private http: HttpClient) { }
 
@@ -25,7 +27,9 @@ export class DataService {
   }
 
   createGroup(creator: number, title: string): Observable<Group> {
-    return this.http.post<Group>(`${this.backendUrl}/groups`, { creator, title });
+    this.headers = this.headers.set('Authorization', `Bearer ${localStorage.getItem('token')}`);
+    console.log('createGroup', this.headers);
+    return this.http.post<Group>(`${this.backendUrl}/groups`, { creator, title }, { headers: this.headers });
   }
 
   getGroupById(id: any): Observable<Group> {

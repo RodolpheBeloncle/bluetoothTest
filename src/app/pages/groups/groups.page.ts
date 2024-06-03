@@ -35,7 +35,7 @@ export class GroupsPage implements OnInit {
       }
     });
 
-    
+
   }
 
   loadGroups(userId: number) {
@@ -82,6 +82,7 @@ export class GroupsPage implements OnInit {
             try {
               const newGroup = await this.dataService.createGroup(this.user.id, data.title).toPromise();
               if (newGroup) {
+                console.log('Created group:', this.user.id, data.title, newGroup);
                 this.loadGroups(this.user.id);
                 this.router.navigateByUrl('/groups/' + newGroup.id);
               } else {
@@ -101,15 +102,6 @@ export class GroupsPage implements OnInit {
     await alert.present();
   }
 
-  async signOut() {
-    try {
-      await this.authService.signOut().toPromise();
-      this.navController.navigateRoot('/login');
-    } catch (error) {
-      console.error('Error signing out:', error);
-      await this.showAlert('Error', 'Failed to sign out. Please try again later.');
-    }
-  }
 
   openLogin() {
     this.navController.navigateForward('/login');

@@ -5,20 +5,7 @@
 </ion-header>
 
 <ion-content>
-  <ion-list>
-    <ng-container *ngIf="groups$ | async as groups; else loading">
-      <ion-item *ngFor="let group of groups" (click)="router.navigateByUrl('/groups/' + group.id)">
-        <ion-label>
-          {{ group.title }}
-        </ion-label>
-      </ion-item>
-    </ng-container>
-    <ng-template #loading>
-      <ion-item>
-        <ion-label>Loading groups...</ion-label>
-      </ion-item>
-    </ng-template>
-  </ion-list>
+
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="createGroup()">
