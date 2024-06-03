@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Subject, Observable } from 'rxjs';
+import { Subject, Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { Message, Group } from '../types/data.service.types';
+import { catchError } from 'rxjs/operators';
+
 
 
 @Injectable({
@@ -19,12 +21,22 @@ export class DataService {
   constructor(private http: HttpClient) { }
 
   getGroups(userId: number): Observable<Group[]> {
-
-
-    return this.http.get<Group[]>(`${this.backendUrl}/groups/${userId}`);
-
-
+    console.log('getGroups', userId);
+    return this.http.get<Group[]>(`${this.backendUrl}/groups/usergroups/${userId}`).pipe(
+      catchError(this.handleError<Group[]>('getGroups', []))
+    );
   }
+
+
+  
+
+  private handleError<T>(operation = 'operation', result?: T) {
+    return (error: any): Observable<T> => {
+      console.error(`${operation} failed: ${error.message}`);
+      return of(result as T);
+    };
+  }
+
 
   createGroup(creator: number, title: string): Observable<Group> {
     this.headers = this.headers.set('Authorization', `Bearer ${localStorage.getItem('token')}`);

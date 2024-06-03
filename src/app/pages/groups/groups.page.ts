@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, afterNextRender } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, NavController, LoadingController } from '@ionic/angular';
 import { AuthService } from './../../services/auth.service';
@@ -39,15 +39,8 @@ export class GroupsPage implements OnInit {
   }
 
   loadGroups(userId: number) {
-    this.groups$ = this.dataService.getGroups(userId).pipe(
-      catchError((error) => {
-        console.error('Error loading groups:', error);
-        this.showAlert('Error', 'Failed to load groups. Please try again later.');
-        return of([]);
-      }),
-    );
-
-
+    console.log('Loading groups for user:', userId);
+    this.groups$ = this.dataService.getGroups(userId);
   }
 
   async ionViewWillEnter() {
