@@ -98,4 +98,10 @@ export class WebSocketService {
   clearMessages() {
     this.messagesSubject.next([]);
   }
+
+  closeWebSocket() {
+    if (this.socket) {
+      this.socket.close();
+    }
+  }
 }

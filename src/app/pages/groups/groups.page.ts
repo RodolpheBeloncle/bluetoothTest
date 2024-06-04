@@ -1,11 +1,10 @@
-import { Component, OnInit, afterNextRender } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, NavController, LoadingController } from '@ionic/angular';
 import { AuthService } from './../../services/auth.service';
 import { DataService } from './../../services/data.service';
 import { Group } from '../../types/data.service.types';
-import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-groups',
@@ -34,19 +33,16 @@ export class GroupsPage implements OnInit {
         this.router.navigate(['/login']);
       }
     });
-
-
   }
 
   loadGroups(userId: number) {
     console.log('Loading groups for user:', userId);
-    this.groups$ = this.dataService.getGroups(userId);
+    this.groups$ = this.dataService.getAllGroups();
   }
 
   async ionViewWillEnter() {
     if (this.user) {
       this.loadGroups(this.user.id);
-
     }
   }
 
@@ -95,6 +91,16 @@ export class GroupsPage implements OnInit {
     await alert.present();
   }
 
+  async doRefresh(event: { target: { complete: () => void; }; }) {
+    if (this.user) {
+      this.loadGroups(this.user.id);
+      event.target.complete();
+    }
+  }
+
+  openGroup(group: Group) {
+    this.router.navigate(['/groups', group.id]);
+  }
 
   openLogin() {
     this.navController.navigateForward('/login');

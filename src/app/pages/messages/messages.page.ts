@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from './../../services/auth.service';
 import { WebSocketService } from '../../services/web-socket.service';
+import { DataService } from './../../services/data.service';
 import { Subscription } from 'rxjs';
 import { Message, Group } from '../../types/data.service.types';
 import { ToastController, LoadingController } from '@ionic/angular';
@@ -13,7 +14,7 @@ import { ToastController, LoadingController } from '@ionic/angular';
 })
 export class MessagesPage implements OnInit, OnDestroy {
   messages: Message[] = [];
-  group: Group | null = null;
+  group: Group | undefined | null;
   messageText: string = '';
   currentUserId: string = '';
   private groupId: string | null = null;
@@ -23,6 +24,7 @@ export class MessagesPage implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private route: ActivatedRoute,
+    private dataService: DataService,
     private webSocketService: WebSocketService,
     private toastController: ToastController,
     private loadingController: LoadingController
@@ -39,6 +41,8 @@ export class MessagesPage implements OnInit, OnDestroy {
       if (user) {
         this.currentUserId = user.id;
         if (this.groupId) {
+          await this.loadGroup(this.groupId);
+          this.loadMessages(this.groupId);
           this.joinGroup(this.groupId);
         }
       }
@@ -48,9 +52,9 @@ export class MessagesPage implements OnInit, OnDestroy {
       }
     });
 
-    this.messagesSubscription = this.webSocketService.messages$.subscribe(messages => {
-      console.log('New messages received:', messages);
-      this.messages = messages;
+    this.messagesSubscription = this.webSocketService.messages$.subscribe((message: Message[]) => {
+      console.log('New message received:', message);
+      this.messages = [...this.messages, ...message];
     });
 
     this.webSocketService.initWebSocket();
@@ -63,6 +67,23 @@ export class MessagesPage implements OnInit, OnDestroy {
     if (this.messagesSubscription) {
       this.messagesSubscription.unsubscribe();
     }
+    this.webSocketService.closeWebSocket();
+  }
+
+  async loadGroup(groupId: string) {
+    try {
+      this.group = await this.dataService.getGroupById(parseInt(groupId, 10)).toPromise();
+    } catch (error) {
+      console.error('Error loading group:', error);
+      await this.showToast('Error loading group');
+      this.group = null; // Assign null if group is not found
+    }
+  }
+
+  loadMessages(groupId: string) {
+    this.dataService.getGroupMessages(parseInt(groupId, 10)).subscribe(messages => {
+      this.messages = messages;
+    });
   }
 
   joinGroup(groupId: string) {
@@ -72,7 +93,13 @@ export class MessagesPage implements OnInit, OnDestroy {
 
   sendMessage() {
     if (this.messageText.trim() && this.groupId) {
-      this.webSocketService.sendMessageToGroup(this.currentUserId, this.groupId, this.messageText);
+      const message = {
+        userId: this.currentUserId,
+        groupId: this.groupId,
+        text: this.messageText,
+        action: 'message'
+      };
+      this.webSocketService.sendMessage(message);
       this.messageText = '';
       console.log('Message sent', this.currentUserId, this.groupId, this.messageText);
       this.showToast('Message sent');
@@ -80,8 +107,6 @@ export class MessagesPage implements OnInit, OnDestroy {
   }
 
   isCurrentUserMessage(message: Message): boolean {
-    console.log('isCurrentUserMessage:', message);
-    console.log('User id listed from the message list', message.userId, this.currentUserId);
     return message.userId === this.currentUserId;
   }
 

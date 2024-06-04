@@ -5,8 +5,6 @@ import { environment } from 'src/environments/environment';
 import { Message, Group } from '../types/data.service.types';
 import { catchError } from 'rxjs/operators';
 
-
-
 @Injectable({
   providedIn: 'root',
 })
@@ -27,35 +25,44 @@ export class DataService {
     );
   }
 
-
-  
-
-  private handleError<T>(operation = 'operation', result?: T) {
-    return (error: any): Observable<T> => {
-      console.error(`${operation} failed: ${error.message}`);
-      return of(result as T);
-    };
-  }
-
-
   createGroup(creator: number, title: string): Observable<Group> {
     this.headers = this.headers.set('Authorization', `Bearer ${localStorage.getItem('token')}`);
     console.log('createGroup', this.headers);
-    return this.http.post<Group>(`${this.backendUrl}/groups`, { creator, title }, { headers: this.headers });
+    return this.http.post<Group>(`${this.backendUrl}/groups`, { creator, title }, { headers: this.headers }).pipe(
+      catchError(this.handleError<Group>('createGroup'))
+    );
   }
 
-  getGroupById(id: any): Observable<Group> {
-    return this.http.get<Group>(`${this.backendUrl}/groups/${id}`);
+  getGroupById(id: number): Observable<Group> {
+    return this.http.get<Group>(`${this.backendUrl}/groups/${id}`).pipe(
+      catchError(this.handleError<Group>('getGroupById'))
+    );
   }
 
-  addGroupMessage(groupId: any, message: any): Observable<Message> {
+  addUserToGroup(userId: number, groupId: number): Observable<void> {
+    return this.http.post<void>(`${this.backendUrl}/groups/addUser`, { userId, groupId }, { headers: this.headers }).pipe(
+      catchError(this.handleError<void>('addUserToGroup'))
+    );
+  }
+
+  getGroupMembers(groupId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.backendUrl}/groups/${groupId}/members`).pipe(
+      catchError(this.handleError<any[]>('getGroupMembers', []))
+    );
+  }
+
+  addGroupMessage(groupId: number, message: string): Observable<Message> {
     const newMessage = { text: message, group_id: groupId };
-    return this.http.post<Message>(`${this.backendUrl}/messages/send`, newMessage);
+    return this.http.post<Message>(`${this.backendUrl}/messages/send`, newMessage, { headers: this.headers }).pipe(
+      catchError(this.handleError<Message>('addGroupMessage'))
+    );
   }
 
-  getGroupMessages(groupId: any): Observable<Message[]> {
+  getGroupMessages(groupId: number): Observable<Message[]> {
     console.log('getGroupMessages', groupId);
-    return this.http.get<Message[]>(`${this.backendUrl}/messages/group/${groupId}`);
+    return this.http.get<Message[]>(`${this.backendUrl}/messages/group/${groupId}`).pipe(
+      catchError(this.handleError<Message[]>('getGroupMessages', []))
+    );
   }
 
   listenToGroup(groupId: string | number): Observable<Message> {
@@ -83,6 +90,14 @@ export class DataService {
     }
   }
 
+  private handleError<T>(operation = 'operation', result?: T) {
+    return (error: any): Observable<T> => {
+      console.error(`${operation} failed: ${error.message}`);
+      return of(result as T);
+    };
+  }
 
-
+  getAllGroups() {
+    return this.http.get<Group[]>(`${this.backendUrl}/groups/getAllGroups`);
+  }
 }

@@ -1,16 +1,24 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>Groups</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="createGroup()">
+        <ion-icon slot="icon-only" name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <ion-list>
-    <ion-item *ngFor="let group of groups$ | async">
+    <ion-item *ngFor="let group of groups$ | async" (click)="openGroup(group)">
       {{ group.title }}
     </ion-item>
   </ion-list>
-
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="createGroup()">
