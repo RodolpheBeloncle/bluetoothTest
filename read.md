@@ -7,6 +7,17 @@ npx cap sync
 
 npx cap open android
 
+----------------------------------------------------------------
+
+coté server : 
+npm run build
+sudo systemctl restart nginx
+sudo systemctl restart bluetoottest
+sudo journalctl -u bluetoothtest -f
+
+
+---------------------------------------
+
    <uses-permission android:maxSdkVersion="30" android:name="android.permission.BLUETOOTH" />
   <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
   <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
