@@ -1,14 +1,12 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { environment } from 'src/environments/environment.prod';
-import { io, Socket } from 'socket.io-client';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WebSocketService {
-  private wsUrl = environment.backendUrl;
-  private socket!: Socket;
+  private wsUrl = 'ws://localhost:3000/ws'; // Update to your WebSocket URL
+  private socket!: WebSocket;
   private messagesSubject = new BehaviorSubject<any[]>([]);
   public messages$ = this.messagesSubject.asObservable();
   private isConnected: boolean = false;
@@ -21,49 +19,36 @@ export class WebSocketService {
 
   initWebSocket() {
     console.log('Initializing WebSocket...');
-    this.socket = io(this.wsUrl, {
-      path: '/ws',
-      transports: ['websocket'],
-      reconnectionAttempts: this.maxReconnectAttempts,
-      reconnectionDelay: 2000,
-    });
+    this.socket = new WebSocket(this.wsUrl);
 
-    this.socket.on('connect', () => {
+    this.socket.onopen = () => {
       console.log('WebSocket connected');
       this.isConnected = true;
       this.reconnectAttempts = 0;
-    });
+    };
 
-    this.socket.on('disconnect', () => {
+    this.socket.onclose = () => {
       console.log('WebSocket disconnected');
       this.isConnected = false;
-    });
+      if (this.reconnectAttempts < this.maxReconnectAttempts) {
+        setTimeout(() => {
+          this.reconnectAttempts++;
+          this.initWebSocket();
+        }, 2000);
+      } else {
+        console.error('Max reconnection attempts reached. Stopping further attempts.');
+      }
+    };
 
-    this.socket.on('message', (message: any) => {
+    this.socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
       console.log('WebSocket message received:', message);
       this.messagesSubject.next([...this.messagesSubject.value, message]);
-    });
+    };
 
-    this.socket.on('connect_error', (error: any) => {
-      console.error('WebSocket connection error:', error);
-      this.reconnectAttempts++;
-      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.error('Max reconnection attempts reached. Stopping further attempts.');
-        this.socket.io.opts.reconnection = false; // Stop further reconnection attempts
-      }
-    });
-
-    this.socket.on('reconnect_attempt', (attemptNumber: number) => {
-      console.log(`WebSocket attempting to reconnect, attempt number ${attemptNumber}`);
-    });
-
-    this.socket.on('reconnect_failed', () => {
-      console.error('WebSocket failed to reconnect');
-    });
-
-    this.socket.on('error', (error: any) => {
+    this.socket.onerror = (error) => {
       console.error('WebSocket error:', error);
-    });
+    };
   }
 
   sendMessage(message: { userId: string; groupId: string; text: string; action: string }) {
@@ -71,7 +56,7 @@ export class WebSocketService {
       console.error('WebSocket is not connected. Cannot send message.');
       return;
     }
-    this.socket.emit('message', message); // Send as object
+    this.socket.send(JSON.stringify(message));
     console.log('Message sent:', message);
   }
 

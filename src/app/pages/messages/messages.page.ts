@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from './../../services/auth.service';
 import { WebSocketService } from '../../services/web-socket.service';
@@ -13,6 +13,7 @@ import { ToastController, LoadingController } from '@ionic/angular';
   styleUrls: ['./messages.page.scss'],
 })
 export class MessagesPage implements OnInit, OnDestroy {
+  @ViewChild('content', { static: false }) content!: ElementRef;
   messages: Message[] = [];
   group: Group | undefined | null;
   messageText: string = '';
@@ -52,9 +53,14 @@ export class MessagesPage implements OnInit, OnDestroy {
       }
     });
 
-    this.messagesSubscription = this.webSocketService.messages$.subscribe((message: Message[]) => {
-      console.log('New message received:', message);
-      this.messages = [...this.messages, ...message];
+    this.messagesSubscription = this.webSocketService.messages$.subscribe((newMessages: any) => {
+      console.log('New messages received:', newMessages);
+      if (Array.isArray(newMessages)) {
+        this.messages = [...this.messages, ...newMessages];
+      } else {
+        this.messages = [...this.messages, newMessages];
+      }
+      this.scrollToBottom();
     });
 
     this.webSocketService.initWebSocket();
@@ -83,6 +89,7 @@ export class MessagesPage implements OnInit, OnDestroy {
   loadMessages(groupId: string) {
     this.dataService.getGroupMessages(parseInt(groupId, 10)).subscribe(messages => {
       this.messages = messages;
+      this.scrollToBottom();
     });
   }
 
@@ -93,16 +100,22 @@ export class MessagesPage implements OnInit, OnDestroy {
 
   sendMessage() {
     if (this.messageText.trim() && this.groupId) {
-      const message = {
+      const message: Message = {
         userId: this.currentUserId,
         groupId: this.groupId,
         text: this.messageText,
-        action: 'message'
+        action: 'message',
+        type: 'text', // Assuming type is 'text'
+        created_at: new Date()
       };
       this.webSocketService.sendMessage(message);
+      this.messages.push(message); // Immediately add the message to the array
       this.messageText = '';
+      this.scrollToBottom();
       console.log('Message sent', this.currentUserId, this.groupId, this.messageText);
       this.showToast('Message sent');
+    } else {
+      console.error('Message text is empty. Cannot send message.');
     }
   }
 
@@ -117,5 +130,11 @@ export class MessagesPage implements OnInit, OnDestroy {
       position: 'top',
     });
     toast.present();
+  }
+
+  scrollToBottom() {
+    setTimeout(() => {
+      this.content.nativeElement.scrollToBottom(300);
+    }, 100);
   }
 }

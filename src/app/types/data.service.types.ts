@@ -9,9 +9,10 @@ export interface User {
 export interface Message {
     type: string;
     userId: string;
-    group_id: string;
+    groupId: string;
     text: string;
     created_at: Date;
+    action: string;
 }
 
 
