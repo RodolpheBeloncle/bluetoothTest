@@ -1,6 +1,6 @@
 export interface User {
     email: string;
-    id: string;
+    id: number;
     name?: string;
     picture?: string;
     password?: string;
@@ -8,8 +8,8 @@ export interface User {
 
 export interface Message {
     type: string;
-    userId: string;
-    groupId: string;
+    userId: number;
+    groupId: number;
     text: string;
     created_at: Date;
     action: string;

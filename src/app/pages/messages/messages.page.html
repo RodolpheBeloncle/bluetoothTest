@@ -1,44 +1,3 @@
-<!-- <ion-header>
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/groups"></ion-back-button>
-    </ion-buttons>
-    <ion-title>{{ group?.title }}</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content class="ion-padding">
-  <div class="message-list" #messageList>
-    <ion-row *ngFor="let message of messages">
-      <ion-col size="10" *ngIf="!isCurrentUserMessage(message)" class="message other-message">
-        <span>{{ message.text }}</span>
-        <div class="time ion-text-left">{{ message.created_at | date:'shortTime' }}</div>
-      </ion-col>
-
-      <ion-col offset="2" size="10" *ngIf="isCurrentUserMessage(message)" class="message my-message">
-        <span>{{ message.text }}</span>
-        <div class="time ion-text-right">{{ message.created_at | date:'shortTime' }}</div>
-      </ion-col>
-    </ion-row>
-  </div>
-</ion-content>
-
-<ion-footer>
-  <ion-toolbar color="light">
-    <ion-row class="ion-align-items-center">
-      <ion-col size="10">
-        <ion-textarea class="message-input-container" autoGrow="true" rows="1" [(ngModel)]="messageText"></ion-textarea>
-      </ion-col>
-      <ion-col size="2" class="ion-text-center">
-        <ion-button fill="clear" (click)="sendMessage()">
-          <ion-icon slot="icon-only" name="send-outline" color="primary" size="large"></ion-icon>
-        </ion-button>
-      </ion-col>
-    </ion-row>
-  </ion-toolbar>
-</ion-footer> -->
-
-
 <ion-header>
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
@@ -47,19 +6,24 @@
     <ion-title>back</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding">
+
+<ion-content class="ion-padding" id="content">
   <div class="message-list">
-    <ion-row class="ion-align-items-center">
-      <button (click)="sendMessage()">Send Message</button>
-      <ul>
-        <li *ngFor="let message of receivedMessages">{{ message }}</li>
-      </ul>
-    </ion-row>
+    <ion-list>
+      <ion-item *ngFor="let message of messages">
+        <ion-label [ngClass]="{'current-user': isCurrentUserMessage(message), 'other-user': !isCurrentUserMessage(message)}">
+          {{message.text}}
+        </ion-label>
+      </ion-item>
+    </ion-list>
   </div>
 </ion-content>
 
 <ion-footer>
   <ion-toolbar color="light">
-
+    <ion-item>
+      <ion-input [(ngModel)]="messageText" placeholder="Enter message"></ion-input>
+      <ion-button (click)="sendMessage()">Send</ion-button>
+    </ion-item>
   </ion-toolbar>
 </ion-footer>

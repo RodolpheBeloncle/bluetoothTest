@@ -13,7 +13,7 @@ import { Observable } from 'rxjs';
 })
 export class GroupsPage implements OnInit {
   user: any;
-  groups$: Observable<Group[]> | undefined;
+  groups$ : Observable<Group[]> | null = null;
 
   constructor(
     private authService: AuthService,
@@ -28,6 +28,7 @@ export class GroupsPage implements OnInit {
     this.authService.getCurrentUser().subscribe(user => {
       this.user = user;
       if (user) {
+
         this.loadGroups(user.id);
       } else {
         this.router.navigate(['/login']);
@@ -35,9 +36,21 @@ export class GroupsPage implements OnInit {
     });
   }
 
-  loadGroups(userId: number) {
-    console.log('Loading groups for user:', userId);
-    this.groups$ = this.dataService.getAllGroups();
+  async loadGroups(userId: number) {
+    const loading = await this.loadingController.create();
+    try {
+      await loading.present();
+      this.groups$ = this.dataService.getAllGroups();
+      await loading.dismiss();
+    }
+    catch (error) {
+      console.error('Error loading groups:', error);
+
+      await this.showAlert('Error', 'Failed to load groups. Please try again later.');
+    }
+
+    await loading.dismiss();
+
   }
 
   async ionViewWillEnter() {

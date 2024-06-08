@@ -1,26 +1,14 @@
 ion-content {
     --background: url('../../../assets/pattern.jpeg') no-repeat;
     --padding-top: 60px;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
 }
 
-.message-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-    margin-bottom: 60px; // Ensure there is enough space for the input field
-}
-
-.message-input-container {
+.message-input {
     border: 1px solid #c3c3c3;
     border-radius: 20px;
     background: #fff;
     box-shadow: 2px 2px 5px 0px rgb(0 0 0 / 5%);
     color: #0b4c40;
-    padding: 10px;
-    margin-bottom: 10px;
 }
 
 ion-textarea {
@@ -30,40 +18,24 @@ ion-textarea {
     min-height: 30px;
 }
 
-.message {
+.message-list {
+    padding: 10px;
+}
+
+ion-item.current-user ion-label {
+    background-color: #7fe2b5;
+    border-radius: 10px;
     padding: 10px;
     margin-bottom: 10px;
-    border-radius: 10px;
-    max-width: 75%;
     word-wrap: break-word;
-}
-
-.my-message {
-    background-color: #7fe2b5;
     text-align: right;
-    margin-left: auto;
 }
 
-.other-message {
-    background-color: #ef8121; // Neutral color for other messages
+ion-item.other-user ion-label {
+    background-color: #d0606a;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    word-wrap: break-word;
     text-align: left;
-    margin-right: auto;
-}
-
-.time {
-    color: #8a8383;
-    font-size: small;
-}
-
-ion-footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: var(--ion-toolbar-background, #fff);
-    padding-bottom: env(safe-area-inset-bottom);
-    z-index: 10;
-}
-
-ion-toolbar {
-    padding-bottom: 10px;
 }
