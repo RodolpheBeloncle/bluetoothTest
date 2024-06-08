@@ -10,6 +10,7 @@ ion-content {
     flex: 1;
     overflow-y: auto;
     padding: 16px;
+    margin-bottom: 60px; // Ensure there is enough space for the input field
 }
 
 .message-input-container {
@@ -44,7 +45,7 @@ ion-textarea {
 }
 
 .other-message {
-    background-color: #f18d29; // Neutral color for other messages
+    background-color: #ef8121; // Neutral color for other messages
     text-align: left;
     margin-right: auto;
 }

@@ -1,4 +1,4 @@
-<ion-header>
+<!-- <ion-header>
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/groups"></ion-back-button>
@@ -7,7 +7,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding" #content>
+<ion-content class="ion-padding">
   <div class="message-list" #messageList>
     <ion-row *ngFor="let message of messages">
       <ion-col size="10" *ngIf="!isCurrentUserMessage(message)" class="message other-message">
@@ -35,5 +35,31 @@
         </ion-button>
       </ion-col>
     </ion-row>
+  </ion-toolbar>
+</ion-footer> -->
+
+
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/groups"></ion-back-button>
+    </ion-buttons>
+    <ion-title>back</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <div class="message-list">
+    <ion-row class="ion-align-items-center">
+      <button (click)="sendMessage()">Send Message</button>
+      <ul>
+        <li *ngFor="let message of receivedMessages">{{ message }}</li>
+      </ul>
+    </ion-row>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar color="light">
+
   </ion-toolbar>
 </ion-footer>
