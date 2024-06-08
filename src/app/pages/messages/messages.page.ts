@@ -61,7 +61,10 @@ export class MessagesPage implements OnInit, OnDestroy {
 
     this.messagesSubscription = this.webSocketService.messageReceived.subscribe((newMessage: Message) => {
       console.log('New message received:', newMessage);
-      this.messages.push(newMessage);
+      // mets a jours les messages uniquement si il est envoyé depuis le client actuel
+      if (newMessage.groupId === this.groupId) {
+        this.messages.push(newMessage);
+      }
       this.scrollToBottom();
     });
   }
@@ -117,7 +120,7 @@ export class MessagesPage implements OnInit, OnDestroy {
         created_at: new Date()
       };
       this.webSocketService.sendMessage(newMessage);
-      this.messages.push(newMessage); // Immediately add the message to the array
+      // this.messages.push(newMessage); 
       this.messageText = '';
       this.scrollToBottom();
     }
