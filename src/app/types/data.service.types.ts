@@ -6,15 +6,16 @@ export interface User {
     password?: string;
 }
 
+// provide message interface with id not obligatory operationnal
 export interface Message {
-    type: string;
+    id?: number;
     userId: number;
     groupId: number;
     text: string;
-    created_at: Date;
     action: string;
+    type: string;
+    created_at: Date;
 }
-
 
 export interface Group {
     id: number;

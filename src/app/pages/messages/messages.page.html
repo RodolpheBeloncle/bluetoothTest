@@ -11,9 +11,21 @@
   <div class="message-list">
     <ion-list>
       <ion-item *ngFor="let message of messages">
-        <ion-label [ngClass]="{'current-user': isCurrentUserMessage(message), 'other-user': !isCurrentUserMessage(message)}">
-          {{message.text}}
-        </ion-label>
+        <ion-item-sliding>
+          <ion-item>
+            <ion-label [ngClass]="{'current-user': isCurrentUserMessage(message), 'other-user': !isCurrentUserMessage(message)}">
+              {{message.text}}
+            </ion-label>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option 
+              color="danger" 
+              *ngIf="message.id !== undefined" 
+              (click)="deleteMessage(message.id)">
+              <ion-icon slot="icon-only" name="trash"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
       </ion-item>
     </ion-list>
   </div>

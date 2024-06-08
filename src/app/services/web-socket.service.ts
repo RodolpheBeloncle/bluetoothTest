@@ -23,7 +23,8 @@ export class WebSocketService {
     this.socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.status === 'success') {
-        const message: Message = {
+        const message: any = {
+          id: data.id,
           userId: data.userId,
           groupId: data.groupId,
           text: data.text,

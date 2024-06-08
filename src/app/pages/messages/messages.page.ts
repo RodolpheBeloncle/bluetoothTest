@@ -20,7 +20,6 @@ export class MessagesPage implements OnInit, OnDestroy {
   currentUserId!: number;
   private groupId!: number;
   private messagesSubscription!: Subscription;
-  private connectionStatusSubscription!: Subscription;
 
   constructor(
     private authService: AuthService,
@@ -129,7 +128,17 @@ export class MessagesPage implements OnInit, OnDestroy {
   isCurrentUserMessage(message: Message): boolean {
     return message.userId === this.currentUserId;
   }
+  
+// delete message by id from
+  deleteMessage(id: number) {
+    console.log('deleteMessage', id);
+    this.dataService.deleteMessage(id).subscribe(() => {
+      this.messages = this.messages.filter(message => message.id !== id);
+    });
 
+    // toast message if message is successfully deleted
+    this.showToast('Message deleted');
+  }
   async showToast(message: string) {
     const toast = await this.toastController.create({
       message,

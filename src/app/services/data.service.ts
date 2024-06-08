@@ -100,4 +100,9 @@ export class DataService {
   getAllGroups() {
     return this.http.get<Group[]>(`${this.backendUrl}/groups/getAllGroups`);
   }
+
+ // delete message by id from
+  deleteMessage(messageId: number): Observable<any> {
+    return this.http.delete(`${this.backendUrl}/messages/${messageId}`, { headers: this.headers });
+  }
 }
