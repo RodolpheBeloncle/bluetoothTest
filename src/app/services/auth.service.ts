@@ -58,13 +58,11 @@ export class AuthService {
     return this.http.post<any>(`${environment.backendUrl}/auth/signup`, credentials)
       .pipe(
         map(response => {
-          if (response && response.user && response.user.id) { // Ensure response has user and user.id
-            const { password, ...user } = response.user;
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            this.currentUserSubject.next(user);
-            return response;
-          } else {
-            throw new Error('Invalid response from server');
+          if (response.status === 'success') {
+            return response
+          }
+          else {
+            throw new Error(response);
           }
         }),
         catchError(error => {
@@ -72,6 +70,7 @@ export class AuthService {
           return throwError(() => new Error('Registration failed'));
         })
       );
+
   }
 
 

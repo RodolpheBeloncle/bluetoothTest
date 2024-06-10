@@ -36,11 +36,12 @@ export class RegisterPage {
     const loading = await this.createLoading();
     try {
       const response = await firstValueFrom(this.authService.signUp(this.credentials.value));
-      console.log('Server Response:', response); // Log server response
-      if (response && response.user && response.user.id) {
+      console.log('Server Response:', response);
+      if (response && response.status === 'success') {
+        this.showAlert('Success', response.message);
         this.router.navigate(['/groups'], { queryParams: { message: 'Please create a group to get started!' } });
       } else {
-        this.showAlert('Failed', 'Invalid response from server');
+        this.showAlert('Failed', response.message);
       }
     } catch (error) {
       console.error('Error during sign-up:', error); // Log error

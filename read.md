@@ -14,6 +14,11 @@ npm run build
 sudo systemctl restart nginx
 sudo systemctl restart bluetoottest
 sudo journalctl -u bluetoothtest -f
+sudo tail -f /var/log/nginx/error.log
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/bluetooth_duckdns_org_error.log
+sudo tail -f /var/log/nginx/bluetoothtest_access.log
+
 
 
 ---------------------------------------

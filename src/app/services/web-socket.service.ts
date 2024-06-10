@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { ToastController } from '@ionic/angular';
 import { Message } from '../types/data.service.types';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -9,11 +10,11 @@ import { Message } from '../types/data.service.types';
 export class WebSocketService {
   private socket!: WebSocket;
   messageReceived: Subject<Message> = new Subject<Message>();
-
+  private websocketUrl = environment.socketUrl;
   constructor(private toastController: ToastController) { }
 
   connect(): void {
-    this.socket = new WebSocket('ws://localhost:3000/ws');
+    this.socket = new WebSocket(this.websocketUrl);
 
     this.socket.onopen = () => {
       console.log('WebSocket connection established.');

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
+import { PushNotificationsService } from '../app/services/push-notifications.service';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -10,8 +11,10 @@ import { Observable } from 'rxjs';
 })
 export class AppComponent implements OnInit {
   isAuthenticated: Observable<boolean>;
+  title = 'push-notifications-client';
 
-  constructor(public authService: AuthService, public router: Router) {
+
+  constructor(public authService: AuthService, public router: Router, private pushService: PushNotificationsService) {
     this.isAuthenticated = this.authService.getCurrentUser();
   }
 
@@ -23,9 +26,22 @@ export class AppComponent implements OnInit {
         this.router.navigate(['/groups']);
       }
     });
+
+    this.subscribeToNotifications();
+    this.sendNotification();
+
   }
 
   signOut(): void {
     this.authService.signOut();
+  }
+
+
+  subscribeToNotifications() {
+    this.pushService.subscribeToNotifications();
+  }
+
+  sendNotification() {
+    this.pushService.sendNotification('Test Title', 'Test Message');
   }
 }

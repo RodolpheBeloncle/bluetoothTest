@@ -19,8 +19,10 @@ export class AuthGuard implements CanActivate {
     return this.auth.getCurrentUser().pipe(
       filter((val) => val !== null), // Filter out initial Behavior subject value
       take(1), // Otherwise the Observable doesn't complete!
-      map((isAuthenticated) => {
-        if (isAuthenticated) {
+      map((isAuthenticated) =>{
+        if (isAuthenticated && Object.keys(isAuthenticated).length !== 0) {
+          console.log('User is authenticated',isAuthenticated)
+
           return true
         } else {
           this.toastController
@@ -30,7 +32,7 @@ export class AuthGuard implements CanActivate {
             })
             .then((toast) => toast.present())
 
-          return this.router.createUrlTree(['/groups'])
+          return this.router.createUrlTree(['/login'])
         }
       })
     )
