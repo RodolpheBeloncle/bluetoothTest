@@ -1,8 +1,7 @@
 npx cap init projectble io.ionic.starter  
  delete android folder
-ionic build
+ionic build --prod
 npx cap add android
-
 npx cap sync
 
 npx cap open android

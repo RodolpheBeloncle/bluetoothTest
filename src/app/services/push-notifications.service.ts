@@ -1,28 +1,56 @@
 import { Injectable } from '@angular/core';
-import { SwPush } from '@angular/service-worker';
-import { HttpClient } from '@angular/common/http';
+import { LocalNotifications } from '@capacitor/local-notifications';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
+
+const SERVER_URL = 'http://localhost:3000/subscription';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PushNotificationsService {
-  readonly VAPID_PUBLIC_KEY = 'BPZa6-Op20MDiDc10LeUEjnqOv1lu0hE6RBVLXAxbW1DcXNuVLHQpim6KCmLo-XpWaxR8cjSxoXkFRoB2AA8vbw';
-  private backendUrl = environment.backendUrl;
 
+  baseUrl = environment.backendUrl;
 
-  constructor(private swPush: SwPush, private http: HttpClient) { }
+  constructor(private http: HttpClient) { }
 
-  subscribeToNotifications() {
-    this.swPush.requestSubscription({
-      serverPublicKey: this.VAPID_PUBLIC_KEY
-    }).then(subscription => {
-      this.http.post(`${this.backendUrl}/api/subscribe`, subscription).subscribe();
-    }).catch(err => console.error('Could not subscribe to notifications', err));
+  saveSubscription(subscription: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const body = JSON.stringify(subscription);
+    console.log('subscription service payload', body);
+    return this.http.post(`${this.baseUrl}/notification/subscribe`, body, { headers });
   }
 
-  sendNotification(title: string, message: string) {
-    const payload = { title, message };
-    this.http.post(`${this.backendUrl}/api/sendNotification`, payload).subscribe();
+  async requestPermission() {
+    if ('Notification' in window) {
+      Notification.requestPermission().then((result) => {
+        if (result === 'granted') {
+          this.showNotification();
+        }
+      });
+    }
   }
+
+  async showNotification() {
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          title: 'Test Title',
+          body: 'Test Body',
+          id: 1,
+          schedule: { at: new Date(Date.now() + 1000 * 5) },
+          sound: "beep.wav",
+          attachments: [{
+            url: 'file://assets/beep.wav',
+            id: '1'
+          }],
+          actionTypeId: '',
+          extra: null
+        }
+      ]
+    });
+  }
+
+
 }

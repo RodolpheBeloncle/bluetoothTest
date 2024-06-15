@@ -7,14 +7,20 @@
           Logout
         </ion-button>
         <ng-template #loggedOut>
-          <ion-button (click)="router.navigate(['/'])">
+          <ion-button (click)=" redirectTo('/')">
             Login
           </ion-button>
         </ng-template>
       </ion-buttons>
     </ion-toolbar>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>
+          Ionic Blank
+        </ion-title>
+      </ion-toolbar>
+    </ion-header>
   </ion-header>
-
   <ion-content>
     <router-outlet></router-outlet>
   </ion-content>

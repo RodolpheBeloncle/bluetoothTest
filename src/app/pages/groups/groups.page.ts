@@ -1,10 +1,15 @@
+// src/app/groups/groups.page.ts
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, NavController, LoadingController } from '@ionic/angular';
 import { AuthService } from './../../services/auth.service';
 import { DataService } from './../../services/data.service';
+import { PushNotificationsService } from './../../services/push-notifications.service';
 import { Group } from '../../types/data.service.types';
 import { Observable } from 'rxjs';
+import { SwPush } from '@angular/service-worker';
+
+const VAPID_PUBLIC = 'BNst2NeEQvMeIMigVq36Kb-XfA2Nxa8iNF7QGubwSwIS7bYDOHalI1S6SyMfyak4CvT2MSKE0kfTKUNsrhaVhOA';
 
 @Component({
   selector: 'app-groups',
@@ -13,7 +18,7 @@ import { Observable } from 'rxjs';
 })
 export class GroupsPage implements OnInit {
   user: any;
-  groups$ : Observable<Group[]> | null = null;
+  groups$: Observable<Group[]> | null = null;
 
   constructor(
     private authService: AuthService,
@@ -21,19 +26,41 @@ export class GroupsPage implements OnInit {
     private alertController: AlertController,
     private loadingController: LoadingController,
     private navController: NavController,
-    public router: Router,
+    private router: Router,
+    private swPush: SwPush,
+    private pushService: PushNotificationsService
   ) { }
 
   ngOnInit() {
     this.authService.getCurrentUser().subscribe(user => {
       this.user = user;
       if (user) {
-
         this.loadGroups(user.id);
       } else {
         this.router.navigate(['/login']);
       }
     });
+
+    if (this.swPush.isEnabled) {
+      this.swPush
+        .requestSubscription({
+          serverPublicKey: VAPID_PUBLIC
+        })
+        .then(subscription => {
+          this.pushService.saveSubscription(subscription).subscribe();
+        })
+        .catch(console.error);
+    }
+
+    if (navigator && 'setAppBadge' in navigator) {
+      console.log("The App Badging API is supported!");
+      // To display a number in the badge
+      (navigator as any).setAppBadge(42);
+
+      navigator.serviceWorker.getRegistration().then(registration => {
+        registration?.showNotification("Hello from the Service Worker!");
+      });
+    }
   }
 
   async loadGroups(userId: number) {
@@ -42,15 +69,12 @@ export class GroupsPage implements OnInit {
       await loading.present();
       this.groups$ = this.dataService.getAllGroups();
       await loading.dismiss();
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Error loading groups:', error);
-
       await this.showAlert('Error', 'Failed to load groups. Please try again later.');
+    } finally {
+      await loading.dismiss();
     }
-
-    await loading.dismiss();
-
   }
 
   async ionViewWillEnter() {
@@ -80,7 +104,6 @@ export class GroupsPage implements OnInit {
           handler: async (data) => {
             const loading = await this.loadingController.create();
             await loading.present();
-
             try {
               const newGroup = await this.dataService.createGroup(this.user.id, data.title).toPromise();
               if (newGroup) {
@@ -126,5 +149,23 @@ export class GroupsPage implements OnInit {
       buttons: ['OK'],
     });
     await alert.present();
+  }
+
+  signOut(): void {
+    this.authService.signOut();
+  }
+
+  requestNotificationPermission() {
+    if (this.swPush.isEnabled) {
+      this.swPush
+        .requestSubscription({
+          serverPublicKey: VAPID_PUBLIC
+        })
+        .then(subscription => {
+          this.pushService.saveSubscription({ ...subscription, userId: this.user.id }).subscribe();
+          console.log('subscription client ', subscription);
+        })
+        .catch(console.error);
+    }
   }
 }
