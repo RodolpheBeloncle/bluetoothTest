@@ -31,7 +31,7 @@ export class GroupsPage implements OnInit {
     private pushService: PushNotificationsService
   ) { }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.authService.getCurrentUser().subscribe(user => {
       this.user = user;
       if (user) {
@@ -41,16 +41,7 @@ export class GroupsPage implements OnInit {
       }
     });
 
-    if (this.swPush.isEnabled) {
-      this.swPush
-        .requestSubscription({
-          serverPublicKey: VAPID_PUBLIC
-        })
-        .then(subscription => {
-          this.pushService.saveSubscription(subscription).subscribe();
-        })
-        .catch(console.error);
-    }
+    this.requestNotificationPermission();
 
     if (navigator && 'setAppBadge' in navigator) {
       console.log("The App Badging API is supported!");
@@ -155,17 +146,36 @@ export class GroupsPage implements OnInit {
     this.authService.signOut();
   }
 
-  requestNotificationPermission() {
-    if (this.swPush.isEnabled) {
+  async requestNotificationPermission() {
+    if (this.user && this.swPush.isEnabled) {
       this.swPush
         .requestSubscription({
           serverPublicKey: VAPID_PUBLIC
         })
         .then(subscription => {
-          this.pushService.saveSubscription({ ...subscription, userId: this.user.id }).subscribe();
-          console.log('subscription client ', subscription);
+          const subscriptionJSON: PushSubscriptionJSON = subscription.toJSON();
+          if (subscriptionJSON.keys) {
+            const pushSubscription = {
+              endpoint: subscription.endpoint,
+              keys: {
+                p256dh: subscriptionJSON.keys['p256dh'],
+                auth: subscriptionJSON.keys['auth']
+              }
+            };
+            this.pushService.saveSubscription(pushSubscription,this.user.id).subscribe(
+              {
+                next: (v) => console.log(v),
+                error: (e) => console.error(e),
+                complete: () => console.info('complete')
+              }
+            );
+            console.log('Subscription client:', pushSubscription, this.user.id);
+          } else {
+            console.error('Subscription keys are undefined');
+          }
         })
         .catch(console.error);
     }
   }
+
 }
