@@ -50,6 +50,7 @@ export class PushNotificationsService {
             complete: () => console.info('complete')
           }
         );
+
       } catch (error) {
         console.error('Error subscribing to notifications:', error);
       }
@@ -69,25 +70,6 @@ export class PushNotificationsService {
     return outputArray;
   }
 
-  async showNotification() {
-    await LocalNotifications.schedule({
-      notifications: [
-        {
-          title: 'Test Title',
-          body: 'Test Body',
-          id: 1,
-          schedule: { at: new Date(Date.now() + 1000 * 5) },
-          sound: "beep.wav",
-          attachments: [{
-            url: 'file://assets/beep.wav',
-            id: '1'
-          }],
-          actionTypeId: '',
-          extra: null
-        }
-      ]
-    });
-  }
 
 
 }

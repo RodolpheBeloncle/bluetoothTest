@@ -3,7 +3,6 @@ npx cap init projectble io.ionic.starter
 ionic build --prod
 npx cap add android
 npx cap sync
-
 npx cap open android
 
 ----------------------------------------------------------------
@@ -17,7 +16,6 @@ sudo tail -f /var/log/nginx/error.log
 sudo tail -f /var/log/nginx/access.log
 sudo tail -f /var/log/nginx/bluetooth_duckdns_org_error.log
 sudo tail -f /var/log/nginx/bluetoothtest_access.log
-
 
 
 ---------------------------------------

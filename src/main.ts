@@ -24,11 +24,11 @@ const checkPermission = (): void => {
 
 const registerSW = async (): Promise<void> => {
   try {
-    const registration = await navigator.serviceWorker.register('ngsw-worker.js');
-    console.log('Service Worker registered with scope:', registration.scope);
+    // const registration = await navigator.serviceWorker.register('ngsw-worker.js');
+    // console.log('Service Worker registered with scope:', registration.scope);
 
     // Register the custom service worker
-    await navigator.serviceWorker.register('service-worker.js');
+    const registration = await navigator.serviceWorker.register('service-worker.js');
     console.log('Custom Service Worker registered with scope:', registration.scope);
   } catch (err) {
     console.error('Service Worker registration failed:', err);

@@ -18,7 +18,7 @@ import { ServiceWorkerModule, SwPush } from '@angular/service-worker';
 
 @NgModule({
   declarations: [AppComponent, Md5Pipe],
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule, ServiceWorkerModule.register('ngsw-worker.js', { enabled: true })],
+  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule, ServiceWorkerModule.register('service-worker.js', { enabled: true })],
   providers: [BluetoothSerial, { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, WebSocketService, PushNotificationsService, SwPush],
   bootstrap: [AppComponent],
 })

@@ -1,4 +1,3 @@
-// src/app/groups/groups.page.ts
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, NavController, LoadingController } from '@ionic/angular';
@@ -8,6 +7,7 @@ import { PushNotificationsService } from './../../services/push-notifications.se
 import { Group } from '../../types/data.service.types';
 import { Observable } from 'rxjs';
 import { SwPush } from '@angular/service-worker';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 const VAPID_PUBLIC = 'BNst2NeEQvMeIMigVq36Kb-XfA2Nxa8iNF7QGubwSwIS7bYDOHalI1S6SyMfyak4CvT2MSKE0kfTKUNsrhaVhOA';
 
@@ -28,7 +28,8 @@ export class GroupsPage implements OnInit {
     private navController: NavController,
     private router: Router,
     private swPush: SwPush,
-    private pushService: PushNotificationsService
+    private pushService: PushNotificationsService,
+    private http: HttpClient
   ) { }
 
   async ngOnInit() {
@@ -42,16 +43,7 @@ export class GroupsPage implements OnInit {
     });
 
     this.requestNotificationPermission();
-
-    if (navigator && 'setAppBadge' in navigator) {
-      console.log("The App Badging API is supported!");
-      // To display a number in the badge
-      (navigator as any).setAppBadge(42);
-
-      navigator.serviceWorker.getRegistration().then(registration => {
-        registration?.showNotification("Hello from the Service Worker!");
-      });
-    }
+    this.listenToNotifications();
   }
 
   async loadGroups(userId: number) {
@@ -147,6 +139,11 @@ export class GroupsPage implements OnInit {
   }
 
   async requestNotificationPermission() {
+    if (navigator && 'setAppBadge' in navigator) {
+      console.log("The App Badging API is supported!");
+      (navigator as any).setAppBadge(42);
+    }
+
     if (this.user && this.swPush.isEnabled) {
       this.swPush
         .requestSubscription({
@@ -162,7 +159,7 @@ export class GroupsPage implements OnInit {
                 auth: subscriptionJSON.keys['auth']
               }
             };
-            this.pushService.saveSubscription(pushSubscription,this.user.id).subscribe(
+            this.pushService.saveSubscription(pushSubscription, this.user.id).subscribe(
               {
                 next: (v) => console.log(v),
                 error: (e) => console.error(e),
@@ -178,4 +175,64 @@ export class GroupsPage implements OnInit {
     }
   }
 
+  listenToNotifications() {
+    this.swPush.messages.subscribe(message => {
+      console.log('Received push message:', message);
+      // Handle the message as needed
+    });
+
+    this.swPush.notificationClicks.subscribe(({ action, notification }) => {
+      console.log('Notification action clicked: ', action);
+      if (action === 'open' && notification.data && notification.data.url) {
+        this.router.navigateByUrl(notification.data.url);
+      }
+    });
+  }
+
+  async sendTestNotification() {
+    const payload = {
+      title: 'Test Notification',
+      body: 'This is a test notification from GroupsPage',
+      icon: 'assets/icons/icon-512x512.png',
+      badge: 'assets/icons/icon-128x128.png',
+      image: 'assets/images/notification-banner.png',
+      url: 'https://yourappurl.com',
+      actions: [
+        { action: 'open', title: 'Open App', icon: 'assets/icons/open-icon.png' },
+        { action: 'dismiss', title: 'Dismiss', icon: 'assets/icons/dismiss-icon.png' }
+      ],
+      vibrate: [100, 50, 100],
+      requireInteraction: true
+    };
+
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    this.http.post(`${this.pushService.baseUrl}/notification/sendNotification`, { payload }, { headers }).subscribe(
+      {
+        next: (v) => console.log('Notification sent:', v),
+        error: (e) => console.error('Error sending notification:', e),
+        complete: () => console.info('Notification send complete')
+      }
+    );
+  }
+
+  async sendLocalNotification() {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        registration.showNotification('Hello, World!', {
+          body: 'This is a notification from the App Badging API',
+          badge: 'assets/icon/favicon.png',
+          icon: 'assets/icon/favicon.png',
+          silent: true,
+          data: {
+            url: 'https://www.google.com',
+            id: 1
+          }
+        });
+      } catch (error) {
+        console.error('Error showing notification:', error);
+      }
+    }
+  }
 }
